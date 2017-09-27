@@ -20,6 +20,7 @@ import classnames from 'classnames';
 import DataPrepBrowser from 'components/DataPrep/DataPrepBrowser';
 import {
   setActiveBrowser,
+  setS3AsActiveBrowser,
   setDatabaseAsActiveBrowser,
   setKafkaAsActiveBrowser
 } from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
@@ -181,6 +182,8 @@ export default class DataPrepConnections extends Component {
       setKafkaAsActiveBrowser({name: 'kafka', id: browserName.id});
       activeConnectionType = 'kafka';
       activeConnectionid = browserName.id;
+    } else if (typeof browserName === 'object' && browserName.type === 'S3') {
+      setS3AsActiveBrowser({name: 's3', id: browserName.id});
     }
 
     this.setState({
@@ -297,7 +300,7 @@ export default class DataPrepConnections extends Component {
                 to={`${baseLinkPath}/kafka/${kafka.id}`}
                 activeClassName="active"
                 className="menu-item-expanded-list"
-                onClick={this.handlePropagation.bind(this, kafka)}
+                onClick={this.handlePropagation.bind(this, kafka.type)}
                 singleWorkspaceMode={this.props.singleWorkspaceMode}
               >
                 {kafka.name}
@@ -331,7 +334,7 @@ export default class DataPrepConnections extends Component {
                 to={`${baseLinkPath}/s3/${s3.id}`}
                 activeClassName="active"
                 className="menu-item-expanded-list"
-                onClick={this.handlePropagation.bind(this, s3)}
+                onClick={this.handlePropagation.bind(this, s3.type)}
                 singleWorkspaceMode={this.props.singleWorkspaceMode}
               >
                 {s3.name}
@@ -499,6 +502,21 @@ export default class DataPrepConnections extends Component {
           render={(match) => {
             let id  = match.match.params.kafkaId;
             setKafkaAsActiveBrowser({name: 'kafka', id});
+            return (
+              <DataPrepBrowser
+                match={match}
+                location={location}
+                toggle={this.toggleSidePanel}
+                onWorkspaceCreate={this.onUploadSuccess}
+              />
+            );
+          }}
+        />
+        <Route
+          path={`${BASEPATH}/s3/:s3Id`}
+          render={(match) => {
+            let id  = match.match.params.s3Id;
+            setS3AsActiveBrowser({name: 's3', id});
             return (
               <DataPrepBrowser
                 match={match}

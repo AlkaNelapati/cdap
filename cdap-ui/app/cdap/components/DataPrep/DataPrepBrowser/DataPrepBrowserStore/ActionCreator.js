@@ -91,6 +91,10 @@ const setDatabaseAsActiveBrowser = (payload) => {
     });
 };
 
+const setS3AsActiveBrowser = (payload) => {
+  setActiveBrowser(payload);
+};
+
 const setKafkaAsActiveBrowser = (payload) => {
   setActiveBrowser(payload);
   setKafkaInfoLoading();
@@ -145,6 +149,7 @@ const setKafkaProperties = (payload) => {
 
 export {
   setActiveBrowser,
+  setS3AsActiveBrowser,
   setDatabaseProperties,
   setDatabaseAsActiveBrowser,
   setKafkaAsActiveBrowser
