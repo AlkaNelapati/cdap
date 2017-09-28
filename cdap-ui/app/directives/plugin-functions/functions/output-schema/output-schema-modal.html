@@ -30,11 +30,23 @@
 
   <div class="row">
     <div class="col-xs-12">
-      <my-complex-schema
-        ng-model="GetSchemaModalController.schema"
-        is-disabled="true"
-        ng-if="GetSchemaModalController.schema && !GetSchemaModalController.error">
-      </my-complex-schema>
+      <div ng-if="GetSchemaModalController.schemas.length > 1">
+        <div ng-repeat="schema in GetSchemaModalController.schemas">
+          <span>{{schema.name}}</span>
+          <my-complex-schema
+            ng-model="schema.schema"
+            is-disabled="true"
+            ng-if="schema.schema && !GetSchemaModalController.error">
+          </my-complex-schema>
+        </div>
+      </div>
+      <div ng-if="GetSchemaModalController.schemas.length <= 1">
+        <my-complex-schema
+          ng-model="GetSchemaModalController.schemas[0].schema"
+          is-disabled="true"
+          ng-if="GetSchemaModalController.schemas[0].schema && !GetSchemaModalController.error">
+        </my-complex-schema>
+      </div>
 
       <p class="text-danger" ng-if="GetSchemaModalController.error">
         Error: {{ GetSchemaModalController.error }}
@@ -43,9 +55,9 @@
   </div>
 </div>
 
-<div class="modal-footer" ng-if="GetSchemaModalController.schema">
+<div class="modal-footer" ng-if="GetSchemaModalController.schemas">
   <button class="btn btn-blue"
-          ng-disabled="!GetSchemaModalController.schema"
+          ng-disabled="!GetSchemaModalController.schemas"
           ng-click="GetSchemaModalController.apply()">
     Apply
   </button>

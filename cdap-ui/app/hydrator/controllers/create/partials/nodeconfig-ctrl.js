@@ -15,7 +15,7 @@
  */
 
 class HydratorPlusPlusNodeConfigCtrl {
-  constructor($scope, $timeout, $state, HydratorPlusPlusPluginConfigFactory, EventPipe, GLOBALS, HydratorPlusPlusConfigActions, myHelpers, NonStorePipelineErrorFactory, $uibModal, HydratorPlusPlusConfigStore, rPlugin, rDisabled, HydratorPlusPlusHydratorService, myPipelineApi, HydratorPlusPlusPreviewStore, rIsStudioMode, HydratorPlusPlusOrderingFactory, avsc, LogViewerStore, DAGPlusPlusNodesActionsFactory, rNodeMetricsContext, HydratorPlusPlusDetailMetricsStore) {
+  constructor($scope, $timeout, $state, HydratorPlusPlusPluginConfigFactory, EventPipe, GLOBALS, HydratorPlusPlusConfigActions, myHelpers, NonStorePipelineErrorFactory, $uibModal, HydratorPlusPlusConfigStore, rPlugin, rDisabled, HydratorPlusPlusHydratorService, myPipelineApi, HydratorPlusPlusPreviewStore, rIsStudioMode, HydratorPlusPlusOrderingFactory, avsc, LogViewerStore, DAGPlusPlusNodesActionsFactory, rNodeMetricsContext, HydratorPlusPlusDetailMetricsStore, HydratorPlusPlusNodeService) {
     'ngInject';
     this.$scope = $scope;
     this.$timeout = $timeout;
@@ -39,6 +39,7 @@ class HydratorPlusPlusNodeConfigCtrl {
     this.avsc = avsc;
     this.LogViewerStore = LogViewerStore;
     this.HydratorPlusPlusDetailMetricsStore = HydratorPlusPlusDetailMetricsStore;
+    this.HydratorPlusPlusNodeService = HydratorPlusPlusNodeService;
     this.setDefaults(rPlugin);
     this.tabs = [
       {
@@ -163,14 +164,16 @@ class HydratorPlusPlusNodeConfigCtrl {
     this.defaultState = angular.copy(this.state);
 
     let propertiesSchema = this.myHelpers.objectQuery(this.state.node, 'plugin', 'properties', 'schema');
-    let schema = propertiesSchema || this.state.node.outputSchema;
+    let schemaArr = propertiesSchema || this.state.node.outputSchema;
 
-    if (schema && schema.length > 0) {
-      try {
-        this.avsc.parse(schema);
-      } catch (e) {
-        this.state.schemaAdvance = true;
-      }
+    if (schemaArr && Array.isArray(schemaArr)) {
+      angular.forEach(schemaArr, (schemaObj) => {
+        try {
+          this.avsc.parse(schemaObj.schema);
+        } catch (e) {
+          this.state.schemaAdvance = true;
+        }
+      });
     }
 
     this.showPropagateConfirm = false;
@@ -284,7 +287,7 @@ class HydratorPlusPlusNodeConfigCtrl {
             var configOutputSchema = this.state.groupsConfig.outputSchema;
             // If its an implicit schema, set the output schema to the implicit schema and inform ConfigActionFactory
             if (configOutputSchema.implicitSchema) {
-              this.state.node.outputSchema = this.HydratorPlusPlusHydratorService.formatOutputSchemaToAvro(configOutputSchema.implicitSchema);
+              this.state.node.outputSchema = [this.HydratorPlusPlusNodeService.getOutputSchemaObj(this.HydratorPlusPlusHydratorService.formatSchemaToAvro(configOutputSchema.implicitSchema))];
               this.HydratorPlusPlusConfigActions.editPlugin(this.state.node.name, this.state.node);
             } else {
               // If not an implcit schema check if a schema property exists in the node config.
@@ -321,7 +324,8 @@ class HydratorPlusPlusNodeConfigCtrl {
               );
             }
             if (!this.state.node.outputSchema || this.state.node.type === 'condition') {
-              this.state.node.outputSchema = this.myHelpers.objectQuery(this.state.node, 'inputSchema', 0, 'schema') || '';
+              let inputSchema = this.myHelpers.objectQuery(this.state.node, 'inputSchema', 0, 'schema') || '';
+              this.state.node.outputSchema = [this.HydratorPlusPlusNodeService.getOutputSchemaObj(inputSchema)];
             }
             if (!this.state.node.plugin.label) {
               this.state.node.plugin.label = this.state.node.name;
@@ -359,29 +363,38 @@ class HydratorPlusPlusNodeConfigCtrl {
   }
   validateSchema() {
     this.state.errors = [];
-    var schema;
-    try {
-      schema = JSON.parse(this.state.node.outputSchema);
-      schema = schema.fields;
-    } catch (e) {
-      schema = null;
+
+    if (!Array.isArray(this.state.node.outputSchema)) {
+      this.state.node.outputSchema = [this.HydratorPlusPlusNodeService.getOutputSchemaObj(this.state.node.outputSchema)];
     }
 
-    var validationRules = [
-      this.hasUniqueFields
-    ];
+    angular.forEach(this.state.node.outputSchema, (schemaObj) => {
+      let schema;
+      try {
+        schema = JSON.parse(schemaObj.schema);
+        schema = schema.fields;
+      } catch (e) {
+        schema = null;
+      }
 
-    var error = [];
-    validationRules.forEach(function (rule) {
-      rule.call(this, schema, error);
+      var validationRules = [
+        this.hasUniqueFields
+      ];
+
+      var error = [];
+      validationRules.forEach(function (rule) {
+        rule.call(this, schema, error);
+      });
+
+      if (error.length > 0) {
+        this.state.errors.push(error);
+      }
     });
 
-    if (error.length > 0) {
-      this.state.errors = error;
+    if (this.state.errors.length) {
       return false;
-    } else {
-      return true;
     }
+    return true;
   }
   hasUniqueFields(schema, error) {
     if (!schema) { return true; }
@@ -410,6 +423,9 @@ class HydratorPlusPlusNodeConfigCtrl {
     return !angular.equals(defaults, state);
   }
   updateDefaultOutputSchema(outputSchema) {
+    if (typeof outputSchema !== 'string') {
+      outputSchema = JSON.stringify(outputSchema);
+    }
     let configOutputSchema = this.state.groupsConfig.outputSchema;
     if (!configOutputSchema.implicitSchema && configOutputSchema.isOutputSchemaExists) {
       this.defaultState.node.outputSchema = outputSchema;
@@ -556,9 +572,9 @@ class HydratorPlusPlusNodeConfigCtrl {
   toggleAdvance() {
     if (this.state.node.outputSchema.length > 0) {
       try {
-        this.avsc.parse(this.state.node.outputSchema);
+        this.avsc.parse(this.state.node.outputSchema[0].schema);
       } catch (e) {
-        this.state.node.outputSchema = '';
+        this.state.node.outputSchema = [];
       }
     }
 

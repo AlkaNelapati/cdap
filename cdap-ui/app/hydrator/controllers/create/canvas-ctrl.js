@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015-2016 Cask Data, Inc.
+ * Copyright © 2015-2017 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -92,7 +92,7 @@ class HydratorPlusPlusCreateCanvasCtrl {
 
               let sourceConn = HydratorPlusPlusConfigStore
                 .getSourceNodes(pluginId)
-                .filter( node => typeof node.outputSchema === 'string');
+                .filter(node => Array.isArray(node.outputSchema));
               let artifactVersion = HydratorPlusPlusConfigStore.getArtifact().version;
               return HydratorPlusPlusNodeService
                 .getPluginInfo(pluginNode, appType, sourceConn, artifactVersion)

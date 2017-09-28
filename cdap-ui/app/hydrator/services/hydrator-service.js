@@ -259,7 +259,7 @@ class HydratorPlusPlusHydratorService {
     if (properties.length !== 0) {
       let schema = {
         type: 'record',
-        name: 'etlSchemaBody',
+        name: this.GLOBALS.schemaRecordName,
         fields: properties
       };
       // turn schema into JSON string
@@ -271,7 +271,7 @@ class HydratorPlusPlusHydratorService {
     }
   }
 
-  formatOutputSchemaToAvro(schema) {
+  formatSchemaToAvro(schema) {
     let typeMap = 'map<string, string>';
     let mapObj = {
       type: 'map',
@@ -308,7 +308,7 @@ class HydratorPlusPlusHydratorService {
       };
     });
     return JSON.stringify({
-      name: outputSchema.name || 'etlSchemaBody',
+      name: outputSchema.name || this.GLOBALS.schemaRecordName,
       type: outputSchema.type || 'record',
       fields: outputSchema.fields || fields
     });

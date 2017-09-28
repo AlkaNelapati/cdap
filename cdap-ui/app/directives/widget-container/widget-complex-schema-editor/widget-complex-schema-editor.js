@@ -23,6 +23,14 @@ function ComplexSchemaEditorController($scope, EventPipe, $timeout, myAlertOnVal
   let clearDOMTimeoutTick2;
 
   vm.schemaObj = vm.model;
+
+  $scope.$watch('SchemaEditor.model', (newValue, oldValue) => {
+    if (schemaObjectsDifferent(newValue, oldValue) && oldValue.fields && newValue.fields && !(oldValue.fields.length && !newValue.fields.length)) {
+      vm.schemaObj = newValue;
+      reRenderComplexSchema();
+    }
+  });
+
   vm.clearDOM = false;
   vm.implicitSchemaPresent = false;
 
@@ -56,6 +64,23 @@ function ComplexSchemaEditorController($scope, EventPipe, $timeout, myAlertOnVal
     }, changeFormat);
   }
 
+  function schemaObjectsDifferent(newSchema, oldSchema) {
+    if (newSchema.name !== oldSchema.name || newSchema.fields.length !== oldSchema.fields.length) {
+      return true;
+    }
+
+    let newSchemaFields = newSchema.fields;
+    let oldSchemaFields = oldSchema.fields;
+
+    for (let i = 0; i < newSchemaFields.length; i++) {
+      if (newSchemaFields[i].name !== oldSchemaFields[i].name || newSchemaFields[i].type !== oldSchemaFields[i].type) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function changeFormat() {
     let format = vm.pluginProperties[watchProperty];
 
@@ -74,10 +99,14 @@ function ComplexSchemaEditorController($scope, EventPipe, $timeout, myAlertOnVal
 
   vm.formatOutput = (updateDefault = false) => {
     vm.error = '';
-    if (typeof vm.schemaObj !== 'string') {
-      vm.model = JSON.stringify(vm.schemaObj);
-    } else {
-      vm.model = vm.schemaObj;
+    // if (typeof vm.schemaObj !== 'string') {
+      // vm.model = JSON.stringify(vm.schemaObj);
+    // } else {
+
+    // }
+    vm.model = vm.schemaObj;
+    if (vm.onChange && typeof vm.onChange === 'function') {
+      vm.onChange({newOutputSchema: vm.model});
     }
     if (vm.updateOutputSchema && updateDefault) {
       vm.updateOutputSchema({outputSchema: vm.model});
@@ -243,6 +272,7 @@ angular.module(PKG.name + '.commons')
         config: '=?',
         pluginName: '=',
         updateOutputSchema: '&',
+        onChange: '&',
         isInStudio: '='
       },
       controller: ComplexSchemaEditorController,

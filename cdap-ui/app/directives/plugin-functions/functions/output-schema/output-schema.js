@@ -60,10 +60,46 @@ angular.module(PKG.name + '.commons')
             templateUrl: 'plugin-functions/functions/output-schema/output-schema-modal.html',
             windowClass: 'hydrator-modal node-config-modal layered-modal',
             keyboard: true,
-            controller: function ($scope, nodeInfo, $state, HydratorPlusPlusHydratorService) {
+            controller: function ($scope, nodeInfo, $state, HydratorPlusPlusHydratorService, HydratorPlusPlusNodeService) {
               var mvm = this;
 
               mvm.node = angular.copy(nodeInfo);
+
+
+              /* This function is needed to handle the output schema res after the fetch api. The res
+              is in two different formats depending on whether one schema is returned, or multiple:
+              1. If one schema is returned, then the res object is like this:
+                {
+                  name: ...,
+                  type: ...,
+                  fields: [...]
+                }
+              In this case just return the res right away.
+              2. If multiple schemas are returned, then the object is like this:
+                {
+                  [schemaName1]: {
+                    name: ...,
+                    type: ...,
+                    fields: [...]
+                  },
+                  [schemaName2]: ...
+                }
+              In this case we need to show all the schema names along with their schema
+              */
+
+              const parseResSchema = (res) => {
+                if (res.name && res.type && res.fields) {
+                  return [HydratorPlusPlusNodeService.getOutputSchemaObj(JSON.stringify(res))];
+                }
+
+                let schemaArr = [];
+                angular.forEach(res, (value, key) => {
+                  if (value.name && value.type && value.fields) {
+                    schemaArr.push(HydratorPlusPlusNodeService.getOutputSchemaObj(JSON.stringify(value), key));
+                  }
+                });
+                return schemaArr;
+              };
 
               mvm.fetchSchema = function () {
                 var config = mvm.node.plugin.properties;
@@ -116,10 +152,10 @@ angular.module(PKG.name + '.commons')
                   .$promise
                   .then(function (res) {
                     mvm.error = null;
-                    mvm.schema = res;
+                    mvm.schemas = parseResSchema(res);
                     mvm.showLoading = false;
                   }, function (err) {
-                    mvm.schema = null;
+                    mvm.schemas = null;
                     mvm.error = err.data;
                     mvm.showLoading = false;
                   });
@@ -128,8 +164,14 @@ angular.module(PKG.name + '.commons')
               mvm.fetchSchema();
 
               mvm.apply = function () {
+                mvm.schemas = mvm.schemas.map(schema => {
+                  return {
+                    name: schema.name,
+                    schema: JSON.stringify(schema.schema)
+                  };
+                });
                 $scope.$close({
-                  schema: mvm.schema
+                  schemas: mvm.schemas
                 });
               };
 
@@ -143,7 +185,8 @@ angular.module(PKG.name + '.commons')
           });
 
           modal.result.then(function (obj) {
-            EventPipe.emit('schema.import', JSON.stringify(obj.schema));
+            vm.node.outputSchema = obj.schemas;
+            // EventPipe.emit('schema.import', JSON.stringify(obj.schema));
           });
         };
 

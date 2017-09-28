@@ -33,7 +33,7 @@ class HydratorPlusPlusNodeService {
   }
   configurePluginInfo(node, appType, sourceConn) {
     const getSchema = (node, targetNode) => {
-      var schema = node.outputSchema;
+      var schema = node.outputSchema[0].schema;
 
       if (targetNode.type === 'errortransform' && this.GLOBALS.pluginConvert[node.type] !== 'source') {
         if (Array.isArray(node.inputSchema) && !node.inputSchema.length) {
@@ -88,7 +88,7 @@ class HydratorPlusPlusNodeService {
           streamSchemaPrefix.push(headersField);
         }
 
-        inputSchema = this.HydratorPlusPlusHydratorService.formatOutputSchemaToAvro({
+        inputSchema = this.HydratorPlusPlusHydratorService.formatSchemaToAvro({
           fields: streamSchemaPrefix.concat(this.myHelpers.objectQuery(inputSchema, 'fields') || [])
         });
       }
@@ -98,11 +98,21 @@ class HydratorPlusPlusNodeService {
     if (['action', 'source'].indexOf(this.GLOBALS.pluginConvert[node.type]) === -1) {
       node.inputSchema = sourceConn.map( source => ({
         name: source.plugin.label,
-        schema: this.HydratorPlusPlusHydratorService.formatOutputSchemaToAvro(getSchema(source, node))
+        schema: this.HydratorPlusPlusHydratorService.formatSchemaToAvro(getSchema(source, node))
       }));
     }
 
     return node;
+  }
+
+  getOutputSchemaObj(schema, schemaObjName) {
+    if (!schemaObjName) {
+      schemaObjName = this.GLOBALS.schemaRecordName;
+    }
+    return {
+      name: schemaObjName,
+      schema
+    };
   }
 }
 HydratorPlusPlusNodeService.$inject = ['$q', 'HydratorPlusPlusHydratorService', 'IMPLICIT_SCHEMA', 'myHelpers', 'GLOBALS'];
