@@ -56,7 +56,8 @@ const database = (state = defaultDatabaseValue, action = defaultAction) => {
         info: objectQuery(action, 'payload', 'info') || state.info,
         connectionId: objectQuery(action, 'payload', 'connectionId'),
         tables: objectQuery(action, 'payload', 'tables'),
-        error: null
+        error: null,
+        loading: false
       });
     case Actions.SET_DATABASE_LOADING:
       return Object.assign({}, state, {
@@ -81,7 +82,8 @@ const kafka = (state = defaultKafkaValue, action = defaultAction) => {
         info: objectQuery(action, 'payload', 'info') || state.info,
         connectionId: objectQuery(action, 'payload', 'connectionId'),
         topics: objectQuery(action, 'payload', 'topics'),
-        error: null
+        error: null,
+        loading: false
       });
     case Actions.SET_KAFKA_LOADING:
       return Object.assign({}, state, {

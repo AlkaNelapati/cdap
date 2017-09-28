@@ -266,7 +266,7 @@ export default class DataPrepConnections extends Component {
                 to={`${baseLinkPath}/database/${database.id}`}
                 activeClassName="active"
                 className="menu-item-expanded-list"
-                onClick={this.handlePropagation.bind(this, database)}
+                onClick={this.handlePropagation.bind(this, database.type)}
                 singleWorkspaceMode={this.props.singleWorkspaceMode}
               >
                 {database.name}

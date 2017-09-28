@@ -22,7 +22,7 @@ const setDatabaseInfoLoading = () => {
   DataPrepBrowserStore.dispatch({
     type: BrowserStoreActions.SET_DATABASE_LOADING,
     payload: {
-      loading: !DataPrepBrowserStore.getState().database.loading
+      loading: true
     }
   });
 };
@@ -31,7 +31,7 @@ const setKafkaInfoLoading = () => {
   DataPrepBrowserStore.dispatch({
     type: BrowserStoreActions.SET_KAFKA_LOADING,
     payload: {
-      loading: !DataPrepBrowserStore.getState().kafka.loading
+      loading: true
     }
   });
 };
@@ -136,7 +136,6 @@ const setDatabaseProperties = (payload) => {
     type: BrowserStoreActions.SET_DATABASE_PROPERTIES,
     payload
   });
-  setDatabaseInfoLoading();
 };
 
 const setKafkaProperties = (payload) => {
@@ -144,7 +143,6 @@ const setKafkaProperties = (payload) => {
     type: BrowserStoreActions.SET_KAFKA_PROPERTIES,
     payload
   });
-  setKafkaInfoLoading();
 };
 
 export {
