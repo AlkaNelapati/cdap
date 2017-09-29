@@ -24,7 +24,11 @@ const Actions = {
   SET_DATABASE_ERROR: 'SET_DATABASE_ERROR',
   SET_KAFKA_PROPERTIES: 'SET_KAFKA_PROPERTIES',
   SET_KAFKA_LOADING: 'SET_KAFKA_LOADING',
-  SET_KAFKA_ERROR: 'SET_KAFKA_ERROR'
+  SET_KAFKA_ERROR: 'SET_KAFKA_ERROR',
+  SET_S3_BUCKETS: 'SET_S3_BUCKETS',
+  SET_S3_ACTIVE_BUCKET: 'SET_S3_ACTIVE_BUCKET',
+  SET_S3_PREFIX: 'SET_S3_ACTIVE_BUCKET',
+  SET_S3_DATAVIEW: 'SET_S3_DATAVIEW'
 };
 
 export {Actions} ;
@@ -43,6 +47,13 @@ const defaultKafkaValue = {
   loading: false,
   error: null,
   connectionId: ''
+};
+
+const defaultS3Value = {
+  buckets: [],
+  activeBucket: '',
+  data: [],
+  prefix: ''
 };
 
 const defaultActiveBrowser = {
@@ -101,6 +112,33 @@ const kafka = (state = defaultKafkaValue, action = defaultAction) => {
   }
 };
 
+const s3 = (state = defaultS3Value, action = defaultAction) => {
+  switch (action.type) {
+    case Actions.SET_S3_BUCKETS:
+      return {
+        ...state,
+        buckets: action.payload.buckets
+      };
+    case Actions.SET_S3_ACTIVE_BUCKET:
+      return {
+        ...state,
+        activeBucket: action.payload.activeBucket
+      };
+    case Actions.SET_S3_PREFIX:
+      return {
+        ...state,
+        prefix: action.payload.prefix
+      };
+    case Actions.SET_S3_DATAVIEW:
+      return {
+        ...state,
+        data: action.payload.data
+      };
+    default:
+      return state;
+  }
+};
+
 const activeBrowser = (state = defaultActiveBrowser, action = defaultAction) => {
   switch (action.type) {
     case Actions.SET_ACTIVEBROWSER:
@@ -116,7 +154,8 @@ const DataPrepBrowserStore = createStore(
   combineReducers({
     database,
     kafka,
-    activeBrowser
+    activeBrowser,
+    s3
   }),
   {
     database: defaultDatabaseValue,

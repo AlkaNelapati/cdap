@@ -68,7 +68,7 @@ const MyDataPrepApi = {
 
   // S3
   s3TestConnection: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/s3/test`),
-
+  getS3Buckets: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/:connectionId/s3/buckets`),
   // Connections
   listConnections: apiCreator(dataSrc, 'GET', 'REQUEST', `${connectionsPath}`),
   createConnection: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/create`),

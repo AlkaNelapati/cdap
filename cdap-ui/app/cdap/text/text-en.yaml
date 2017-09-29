@@ -361,6 +361,9 @@ features:
           1: '{count} Topic'
           _: "{count} Topics"
         title: Select Topic
+      S3Browser:
+        TopPanel:
+          selectData: Select Data
     Directives:
       apply: Apply
       cancel: Cancel

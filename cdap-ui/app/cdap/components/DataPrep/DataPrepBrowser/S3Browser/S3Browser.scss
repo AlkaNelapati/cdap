@@ -1,0 +1,68 @@
+/*
+ * Copyright © 2017 Cask Data, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+*/
+
+$header_border_color: #cccccc;
+$header_bg_color: #eeeeee;
+$row_font_color: #333333;
+
+.s3-browser {
+  height: 100%;
+
+  .sub-panel {
+    padding: 0 15px;
+    .info {
+      line-height: 46px;
+      font-size: 12px;
+      color: #999999;
+    }
+    .search-container {
+      width: 200px;
+      padding-left: 15px;
+      display: inline-block;
+    }
+  }
+  .s3-content {
+    height: calc(100% - 56px - 46px);
+    .s3-content-header {
+      border-bottom: 1px solid $header_border_color;
+      border-top: 1px solid $header_border_color;
+      background-color: $header_bg_color;
+      line-height: 36px;
+      font-weight: 600;
+      .row {
+        margin: 0;
+      }
+    }
+    .s3-content-body {
+      height: calc(100% - 38px);
+      overflow-y: overlay;
+      .s3-buckets {
+        > .row {
+          margin: 0;
+          border-bottom: 1px solid $header_border_color;
+          line-height: 36px;
+          color: $row_font_color;
+
+          > div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
+      }
+    }
+  }
+}

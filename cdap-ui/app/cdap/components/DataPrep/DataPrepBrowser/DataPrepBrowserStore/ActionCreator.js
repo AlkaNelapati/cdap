@@ -17,6 +17,7 @@ import DataPrepBrowserStore, {Actions as BrowserStoreActions} from 'components/D
 import NamespaceStore from 'services/NamespaceStore';
 import MyDataPrepApi from 'api/dataprep';
 import {objectQuery} from 'services/helpers';
+import {fetchBuckets} from 'components/DataPrep/DataPrepBrowser/S3Browser/ActionCreator';
 
 const setDatabaseInfoLoading = () => {
   DataPrepBrowserStore.dispatch({
@@ -93,6 +94,7 @@ const setDatabaseAsActiveBrowser = (payload) => {
 
 const setS3AsActiveBrowser = (payload) => {
   setActiveBrowser(payload);
+  fetchBuckets(payload.id);
 };
 
 const setKafkaAsActiveBrowser = (payload) => {
