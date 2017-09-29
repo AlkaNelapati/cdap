@@ -38,6 +38,7 @@ import ConnectionPopover from 'components/DataPrepConnections/ConnectionPopover'
 import DataPrepStore from 'components/DataPrep/store';
 import {objectQuery, preventPropagation} from 'services/helpers';
 import Helmet from 'react-helmet';
+import LoadingSVGCentered from 'components/LoadingSVGCentered';
 
 require('./DataPrepConnections.scss');
 const PREFIX = 'features.DataPrepConnections';
@@ -85,6 +86,7 @@ export default class DataPrepConnections extends Component {
       sidePanelExpanded: this.props.enableRouting ? true : false,
       backendChecking: true,
       backendDown: false,
+      loading: true,
       databaseList: [],
       kafkaList: [],
       s3List: [],
@@ -230,6 +232,7 @@ export default class DataPrepConnections extends Component {
       state.databaseList = databaseList;
       state.kafkaList = kafkaList;
       state.s3List = s3List;
+      state.loading = false;
       this.setState(state);
     });
   }
@@ -586,6 +589,10 @@ export default class DataPrepConnections extends Component {
       );
     }
 
+    let {backendChecking, loading} = this.state;
+    if (backendChecking || loading) {
+      return (<LoadingSVGCentered />);
+    }
     return (
       <div className="dataprep-connections-container">
         {pageTitle}
