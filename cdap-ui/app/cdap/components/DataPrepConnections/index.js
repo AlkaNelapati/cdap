@@ -334,7 +334,7 @@ export default class DataPrepConnections extends Component {
               className="clearfix"
             >
               <NavLinkWrapper
-                to={`${baseLinkPath}/s3/${s3.id}`}
+                to={`${baseLinkPath}/s3/${s3.id}/buckets`}
                 activeClassName="active"
                 className="menu-item-expanded-list"
                 onClick={this.handlePropagation.bind(this, s3.type)}

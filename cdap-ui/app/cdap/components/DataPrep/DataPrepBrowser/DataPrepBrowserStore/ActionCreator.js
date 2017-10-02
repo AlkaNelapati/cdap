@@ -17,7 +17,6 @@ import DataPrepBrowserStore, {Actions as BrowserStoreActions} from 'components/D
 import NamespaceStore from 'services/NamespaceStore';
 import MyDataPrepApi from 'api/dataprep';
 import {objectQuery} from 'services/helpers';
-import {fetchBuckets} from 'components/DataPrep/DataPrepBrowser/S3Browser/ActionCreator';
 
 const setDatabaseInfoLoading = () => {
   DataPrepBrowserStore.dispatch({
@@ -94,8 +93,100 @@ const setDatabaseAsActiveBrowser = (payload) => {
 
 const setS3AsActiveBrowser = (payload) => {
   setActiveBrowser(payload);
-  fetchBuckets(payload.id);
+  let namespace = NamespaceStore.getState().selectedNamespace;
+  let {id} = payload;
+  let params = {
+    namespace,
+    connectionId: id
+  };
+  DataPrepBrowserStore.dispatch({
+    type: BrowserStoreActions.SET_S3_CONNECTION_ID,
+    payload: {
+      connectionId: id
+    }
+  });
+  MyDataPrepApi.getConnection(params)
+    .subscribe((res) => {
+      let info = objectQuery(res, 'values', 0);
+      DataPrepBrowserStore.dispatch({
+        type: BrowserStoreActions.SET_S3_CONNECTION_DETAILS,
+        payload: {
+          info,
+          connectionId: id
+        }
+      });
+    });
 };
+
+export function fetchBuckets(connectionId) {
+  let {selectedNamespace: namespace} = NamespaceStore.getState();
+  MyDataPrepApi
+    .getS3Buckets({namespace, connectionId})
+    .subscribe(res => {
+      DataPrepBrowserStore.dispatch({
+        type: BrowserStoreActions.SET_S3_BUCKETS,
+        payload: {
+          buckets: res
+        }
+      });
+    });
+}
+
+export function setActiveBucket(activeBucket, prefix) {
+  DataPrepBrowserStore.dispatch({
+    type: BrowserStoreActions.SET_S3_ACTIVE_BUCKET,
+    payload:{
+      activeBucket
+    }
+  });
+  if (prefix) {
+    setPrefix(prefix);
+  } else {
+    fetchBucketDetails();
+  }
+}
+
+export function setPrefix(prefix) {
+  DataPrepBrowserStore.dispatch({
+    type: BrowserStoreActions.SET_S3_PREFIX,
+    payload: {
+      prefix
+    }
+  });
+  fetchBucketDetails(prefix);
+}
+
+export function fetchBucketDetails(prefix) {
+  setS3Loading();
+  let {selectedNamespace: namespace} = NamespaceStore.getState();
+  let { activeBucket, connectionId} = DataPrepBrowserStore.getState().s3;
+  let params = {
+    namespace,
+    connectionId,
+    bucketId: activeBucket
+  };
+  if (prefix) {
+    params = {...params, prefix};
+  }
+  MyDataPrepApi
+    .exploreBucketDetails(params)
+    .subscribe(
+      activeBucketDetails => {
+        DataPrepBrowserStore.dispatch({
+          type: BrowserStoreActions.SET_S3_ACTIVE_BUCKET_DETAILS,
+          payload: {
+            activeBucketDetails
+          }
+        });
+      }
+    );
+}
+
+export function setS3Loading() {
+  DataPrepBrowserStore.dispatch({
+    type: BrowserStoreActions.SET_S3_LOADING
+  });
+}
 
 const setKafkaAsActiveBrowser = (payload) => {
   setActiveBrowser(payload);

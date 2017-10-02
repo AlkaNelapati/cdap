@@ -26,8 +26,12 @@ const Actions = {
   SET_KAFKA_LOADING: 'SET_KAFKA_LOADING',
   SET_KAFKA_ERROR: 'SET_KAFKA_ERROR',
   SET_S3_BUCKETS: 'SET_S3_BUCKETS',
+  SET_S3_LOADING: 'SET_S3_LOADING',
+  SET_S3_ACTIVE_BUCKET_DETAILS: 'SET_S3_ACTIVE_BUCKET_DETAILS',
+  SET_S3_CONNECTION_DETAILS: 'SET_S3_CONNECTION_DETAILS',
+  SET_S3_CONNECTION_ID: 'SET_S3_CONNECTION_ID',
   SET_S3_ACTIVE_BUCKET: 'SET_S3_ACTIVE_BUCKET',
-  SET_S3_PREFIX: 'SET_S3_ACTIVE_BUCKET',
+  SET_S3_PREFIX: 'SET_S3_PREFIX',
   SET_S3_DATAVIEW: 'SET_S3_DATAVIEW'
 };
 
@@ -50,10 +54,14 @@ const defaultKafkaValue = {
 };
 
 const defaultS3Value = {
-  buckets: [],
+  info: {},
+  loading: false,
+  error: null,
   activeBucket: '',
-  data: [],
-  prefix: ''
+  activeBucketDetails: {},
+  buckets: [],
+  prefix: '',
+  connectionId: ''
 };
 
 const defaultActiveBrowser = {
@@ -114,6 +122,23 @@ const kafka = (state = defaultKafkaValue, action = defaultAction) => {
 
 const s3 = (state = defaultS3Value, action = defaultAction) => {
   switch (action.type) {
+    case Actions.SET_S3_CONNECTION_ID:
+      return {
+        ...state,
+        connectionId: action.payload.connectionId
+      };
+    case Actions.SET_S3_CONNECTION_DETAILS:
+      return {
+        ...state,
+        info: action.payload.info,
+        loading: false,
+        error: null
+      };
+    case Actions.SET_S3_LOADING:
+      return {
+        ...state,
+        loading: true
+      };
     case Actions.SET_S3_BUCKETS:
       return {
         ...state,
@@ -122,17 +147,20 @@ const s3 = (state = defaultS3Value, action = defaultAction) => {
     case Actions.SET_S3_ACTIVE_BUCKET:
       return {
         ...state,
-        activeBucket: action.payload.activeBucket
+        activeBucket: action.payload.activeBucket,
+        activeBucketDetails: {},
+        loading: true,
+      };
+    case Actions.SET_S3_ACTIVE_BUCKET_DETAILS:
+      return {
+        ...state,
+        activeBucketDetails: action.payload.activeBucketDetails,
+        loading: false
       };
     case Actions.SET_S3_PREFIX:
       return {
         ...state,
         prefix: action.payload.prefix
-      };
-    case Actions.SET_S3_DATAVIEW:
-      return {
-        ...state,
-        data: action.payload.data
       };
     default:
       return state;

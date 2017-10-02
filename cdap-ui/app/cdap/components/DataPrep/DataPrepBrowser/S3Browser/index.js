@@ -18,16 +18,38 @@ import React, {Component, PropTypes} from 'react';
 import IconSVG from 'components/IconSVG';
 import T from 'i18n-react';
 import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
+import {setActiveBucket, fetchBuckets} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
 import BucketDataView from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketData';
 import BucketsList from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketsList';
+import {Route, Switch, Redirect} from 'react-router-dom';
+import queryString from 'query-string';
+import {objectQuery} from 'services/helpers';
 
 require('./S3Browser.scss');
+const RouteToS3Home = (match) => {
+  let path = match.location.pathname;
+  path = path[path.length - 1] === '/' ? path.slice(0, path.length - 1) : path;
+  return <Redirect to={`${path}/buckets`} />;
+};
 
 const PREFIX = 'features.DataPrep.DataPrepBrowser.S3Browser';
 export default class S3Browser extends Component {
   static propTypes = {
-    toggle: PropTypes.func
+    toggle: PropTypes.func,
+    location: PropTypes.object,
+    match: PropTypes.object,
+    enableRouting: PropTypes.bool,
+    onWorkspaceCreate: PropTypes.func
   };
+
+  static defaultProps = {
+    enableRouting: true
+  };
+
+  componentDidMount() {
+    console.log(this.props);
+    console.log('get active bucket and prefix if available');
+  }
 
   listingInfo = () => {
     let {s3} = DataPrepBrowserStore.getState();
@@ -39,8 +61,43 @@ export default class S3Browser extends Component {
     return `10 Files and Directories`;
   }
 
-  render() {
+  renderContentBody = () => {
     let {activeBucket} = DataPrepBrowserStore.getState().s3;
+    let BASEPATH = '/ns/:namespace/connections/s3/:s3Id';
+    if (this.props.enableRouting) {
+      return (
+        <Switch>
+          <Route
+            exact
+            path={`${BASEPATH}`}
+            render={RouteToS3Home}
+          />
+          <Route
+            exact
+            path={`${BASEPATH}/buckets`}
+            render={(match) => {
+              let s3Id = match.match.params.s3Id;
+              fetchBuckets(s3Id);
+              return <BucketsList />;
+            }}
+          />
+          <Route
+            path={`${BASEPATH}/buckets/:bucketId`}
+            render={(match) => {
+              let bucketId = match.match.params.bucketId;
+              let {prefix} = queryString.parse(objectQuery(this.props, 'location', 'search'));
+              setActiveBucket(bucketId, prefix);
+              return <BucketDataView />;
+            }}
+          />
+          <Route render={RouteToS3Home} />
+        </Switch>
+      );
+    }
+    return !activeBucket.length ? <BucketsList /> : <BucketDataView />;
+  };
+
+  render() {
     return (
       <div className="s3-browser">
         <div className="top-panel">
@@ -70,24 +127,7 @@ export default class S3Browser extends Component {
           </div>
         </div>
         <div className="s3-content">
-          <div className="s3-content-header">
-            <div className="row">
-              <div className="col-xs-4">
-                Name
-              </div>
-              <div className="col-xs-4">
-                Owner
-              </div>
-              <div className="col-xs-4">
-                Last Modified
-              </div>
-            </div>
-          </div>
-          <div className="s3-content-body">
-            {
-              !activeBucket.length ? <BucketsList /> : <BucketDataView />
-            }
-          </div>
+          {this.renderContentBody()}
         </div>
       </div>
     );

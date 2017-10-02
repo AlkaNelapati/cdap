@@ -17,26 +17,46 @@
 import React, {PropTypes} from 'react';
 import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
 import {connect, Provider} from 'react-redux';
-
+import {Link} from 'react-router-dom';
 
 const BucketsList = ({buckets}) => {
+  let pathname = window.location.pathname.replace(/\/cdap/, '');
   return (
-    <div className="s3-buckets">
-      {
-        buckets.map(bucket => (
-          <div className="row">
-            <div className="col-xs-4">
-              {bucket.name}
-            </div>
-            <div className="col-xs-4">
-              {bucket.owner['display-name']}
-            </div>
-            <div className="col-xs-4">
-              {bucket['creation-date']}
-            </div>
+    <div>
+      <div className="s3-content-header">
+        <div className="row">
+          <div className="col-xs-4">
+            Name
           </div>
-        ))
-      }
+          <div className="col-xs-4">
+            Owner
+          </div>
+          <div className="col-xs-4">
+            Last Modified
+          </div>
+        </div>
+      </div>
+      <div className="s3-content-body">
+        <div className="s3-buckets">
+          {
+            buckets.map(bucket => (
+              <Link to={`${pathname}/${bucket.name}`}>
+                <div className="row">
+                  <div className="col-xs-4">
+                    {bucket.name}
+                  </div>
+                  <div className="col-xs-4">
+                    {bucket.owner['display-name']}
+                  </div>
+                  <div className="col-xs-4">
+                    {bucket['creation-date']}
+                  </div>
+                </div>
+              </Link>
+            ))
+          }
+        </div>
+      </div>
     </div>
   );
 };

@@ -36,6 +36,9 @@ $row_font_color: #333333;
   }
   .s3-content {
     height: calc(100% - 56px - 46px);
+    > div {
+      height: 100%;
+    }
     .s3-content-header {
       border-bottom: 1px solid $header_border_color;
       border-top: 1px solid $header_border_color;
@@ -48,9 +51,9 @@ $row_font_color: #333333;
     }
     .s3-content-body {
       height: calc(100% - 38px);
-      overflow-y: overlay;
+      overflow-y: auto;
       .s3-buckets {
-        > .row {
+        .row {
           margin: 0;
           border-bottom: 1px solid $header_border_color;
           line-height: 36px;
