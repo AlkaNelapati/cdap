@@ -21,9 +21,11 @@ import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBr
 import {setActiveBucket, fetchBuckets} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
 import BucketDataView from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketData';
 import BucketsList from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketsList';
+import BucketWrapper from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketWrapper';
 import {Route, Switch, Redirect} from 'react-router-dom';
 import queryString from 'query-string';
 import {objectQuery} from 'services/helpers';
+import {Provider} from 'react-redux';
 
 require('./S3Browser.scss');
 const RouteToS3Home = (match) => {
@@ -46,11 +48,6 @@ export default class S3Browser extends Component {
     enableRouting: true
   };
 
-  componentDidMount() {
-    console.log(this.props);
-    console.log('get active bucket and prefix if available');
-  }
-
   listingInfo = () => {
     let {s3} = DataPrepBrowserStore.getState();
 
@@ -62,7 +59,7 @@ export default class S3Browser extends Component {
   }
 
   renderContentBody = () => {
-    let {activeBucket} = DataPrepBrowserStore.getState().s3;
+    let {buckets, connectionId} = DataPrepBrowserStore.getState().s3;
     let BASEPATH = '/ns/:namespace/connections/s3/:s3Id';
     if (this.props.enableRouting) {
       return (
@@ -78,7 +75,7 @@ export default class S3Browser extends Component {
             render={(match) => {
               let s3Id = match.match.params.s3Id;
               fetchBuckets(s3Id);
-              return <BucketsList />;
+              return <BucketsList {...this.props} />;
             }}
           />
           <Route
@@ -87,49 +84,54 @@ export default class S3Browser extends Component {
               let bucketId = match.match.params.bucketId;
               let {prefix} = queryString.parse(objectQuery(this.props, 'location', 'search'));
               setActiveBucket(bucketId, prefix);
-              return <BucketDataView />;
+              return <BucketDataView {...this.props} />;
             }}
           />
           <Route render={RouteToS3Home} />
         </Switch>
       );
     }
-    return !activeBucket.length ? <BucketsList /> : <BucketDataView />;
+    if (!buckets.length) {
+      fetchBuckets(connectionId);
+    }
+    return <BucketWrapper {...this.props} />;
   };
 
   render() {
     return (
-      <div className="s3-browser">
-        <div className="top-panel">
-          <div className="title">
-            <h5>
-              <span
-                className="fa fa-fw"
-                onClick={this.props.toggle}
-              >
-                <IconSVG name="icon-bars" />
-              </span>
+      <Provider store={DataPrepBrowserStore}>
+        <div className="s3-browser">
+          <div className="top-panel">
+            <div className="title">
+              <h5>
+                <span
+                  className="fa fa-fw"
+                  onClick={this.props.toggle}
+                >
+                  <IconSVG name="icon-bars" />
+                </span>
 
-              <span>
-                {T.translate(`${PREFIX}.TopPanel.selectData`)}
-              </span>
-            </h5>
-          </div>
-        </div>
-        <div className="sub-panel clearfix">
-          <div className="float-xs-right">
-            <span className="info">
-              {this.listingInfo()}
-            </span>
-            <div className="search-container">
-              <input type="text" className="form-control" placeholder="Search this directory" value="" />
+                <span>
+                  {T.translate(`${PREFIX}.TopPanel.selectData`)}
+                </span>
+              </h5>
             </div>
           </div>
+          <div className="sub-panel clearfix">
+            <div className="float-xs-right">
+              <span className="info">
+                {this.listingInfo()}
+              </span>
+              <div className="search-container">
+                <input type="text" className="form-control" placeholder="Search this directory" value="" />
+              </div>
+            </div>
+          </div>
+          <div className="s3-content">
+            {this.renderContentBody()}
+          </div>
         </div>
-        <div className="s3-content">
-          {this.renderContentBody()}
-        </div>
-      </div>
+      </Provider>
     );
   }
 }

@@ -15,12 +15,25 @@
 */
 
 import React, {PropTypes} from 'react';
-import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
-import {connect, Provider} from 'react-redux';
+import {connect} from 'react-redux';
+import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import {Link} from 'react-router-dom';
+import {setActiveBucket} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
+import {preventPropagation} from 'services/helpers';
 
-const BucketsList = ({buckets}) => {
+const onClickHandler = (bucketId, e) => {
+  setActiveBucket(bucketId);
+  preventPropagation(e);
+  return false;
+};
+
+const BucketsList = ({buckets, loading, enableRouting}) => {
+  if (loading) {
+    return <LoadingSVGCentered />;
+  }
   let pathname = window.location.pathname.replace(/\/cdap/, '');
+  let ContainerElement = enableRouting ? Link : 'div';
+
   return (
     <div>
       <div className="s3-content-header">
@@ -40,7 +53,11 @@ const BucketsList = ({buckets}) => {
         <div className="s3-buckets">
           {
             buckets.map(bucket => (
-              <Link to={`${pathname}/${bucket.name}`}>
+              <ContainerElement
+                to={`${pathname}/${bucket.name}`}
+                isNativeLink={!enableRouting}
+                onClick={onClickHandler.bind(null, bucket.name)}
+              >
                 <div className="row">
                   <div className="col-xs-4">
                     {bucket.name}
@@ -52,7 +69,7 @@ const BucketsList = ({buckets}) => {
                     {bucket['creation-date']}
                   </div>
                 </div>
-              </Link>
+              </ContainerElement>
             ))
           }
         </div>
@@ -62,28 +79,23 @@ const BucketsList = ({buckets}) => {
 };
 
 BucketsList.propTypes = {
-  buckets: PropTypes.arrayOf(PropTypes.object)
+  buckets: PropTypes.arrayOf(PropTypes.object),
+  loading: PropTypes.bool,
+  enableRouting: PropTypes.bool
 };
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, ownProps) => {
+  let {enableRouting = true} = ownProps;
   return {
-    buckets: state.s3.buckets
+    buckets: state.s3.buckets,
+    loading: state.s3.loading,
+    enableRouting
   };
 };
-
-// const mapDispatchToProps = (dispatch) => {
-
-// }
 
 const BucketsListWrapper = connect(
   mapStateToProps
 )(BucketsList);
 
-const Buckets = () => (
-  <Provider store={DataPrepBrowserStore}>
-    <BucketsListWrapper />
-  </Provider>
-);
-
-export default Buckets;
+export default BucketsListWrapper;

@@ -123,15 +123,15 @@ const kafka = (state = defaultKafkaValue, action = defaultAction) => {
 const s3 = (state = defaultS3Value, action = defaultAction) => {
   switch (action.type) {
     case Actions.SET_S3_CONNECTION_ID:
+      // This means the user is starting afresh. Reset everything to default and set the connectionID
       return {
-        ...state,
+        ...defaultS3Value,
         connectionId: action.payload.connectionId
       };
     case Actions.SET_S3_CONNECTION_DETAILS:
       return {
         ...state,
         info: action.payload.info,
-        loading: false,
         error: null
       };
     case Actions.SET_S3_LOADING:
@@ -142,14 +142,14 @@ const s3 = (state = defaultS3Value, action = defaultAction) => {
     case Actions.SET_S3_BUCKETS:
       return {
         ...state,
-        buckets: action.payload.buckets
+        buckets: action.payload.buckets,
+        loading: false
       };
     case Actions.SET_S3_ACTIVE_BUCKET:
       return {
         ...state,
         activeBucket: action.payload.activeBucket,
-        activeBucketDetails: {},
-        loading: true,
+        activeBucketDetails: {}
       };
     case Actions.SET_S3_ACTIVE_BUCKET_DETAILS:
       return {

@@ -53,6 +53,9 @@ $row_font_color: #333333;
       height: calc(100% - 38px);
       overflow-y: auto;
       .s3-buckets {
+        > div {
+          cursor: pointer;
+        }
         .row {
           margin: 0;
           border-bottom: 1px solid $header_border_color;

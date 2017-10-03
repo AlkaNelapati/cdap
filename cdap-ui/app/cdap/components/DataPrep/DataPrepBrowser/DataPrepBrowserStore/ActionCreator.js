@@ -93,6 +93,7 @@ const setDatabaseAsActiveBrowser = (payload) => {
 
 const setS3AsActiveBrowser = (payload) => {
   setActiveBrowser(payload);
+  setS3Loading();
   let namespace = NamespaceStore.getState().selectedNamespace;
   let {id} = payload;
   let params = {
@@ -119,6 +120,7 @@ const setS3AsActiveBrowser = (payload) => {
 };
 
 export function fetchBuckets(connectionId) {
+  setS3Loading();
   let {selectedNamespace: namespace} = NamespaceStore.getState();
   MyDataPrepApi
     .getS3Buckets({namespace, connectionId})

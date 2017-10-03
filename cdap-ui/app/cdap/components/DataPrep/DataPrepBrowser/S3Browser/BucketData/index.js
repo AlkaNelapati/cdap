@@ -15,22 +15,34 @@
 */
 
 import React, {PropTypes} from 'react';
-import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
-import {connect, Provider} from 'react-redux';
-import {Link} from 'react-router-dom';
+import {connect} from 'react-redux';
 import LoadingSVGCentered from 'components/LoadingSVGCentered';
+import {Link} from 'react-router-dom';
+import {setActiveBucket} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
+import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
+import {preventPropagation} from 'services/helpers';
 
-const BucketData = ({data}) => {
+const onClickHandler = (prefix, e) => {
+  let {activeBucket} = DataPrepBrowserStore.getState().s3;
+  setActiveBucket(activeBucket, prefix);
+  preventPropagation(e);
+  return false;
+};
+
+
+const BucketData = ({data, loading, enableRouting}) => {
+  if (loading) {
+    return <LoadingSVGCentered />;
+  }
+
   if (!Object.keys(data).length) {
     return null;
   }
   let files = data['object-summaries'];
   let directories = data.directories.map(directory => ({key: directory}));
   let pathname = window.location.pathname.replace(/\/cdap/, '');
-  let {loading} = DataPrepBrowserStore.getState().s3;
-  if (loading) {
-    return <LoadingSVGCentered />;
-  }
+  let ContainerElement = enableRouting ? Link : 'div';
+
   return (
     <div>
       <div className="s3-content-header">
@@ -53,7 +65,10 @@ const BucketData = ({data}) => {
         <div className="s3-buckets">
           {
             files.concat(directories).map(file => (
-              <Link to={`${pathname}?prefix=${file.key}`}>
+              <ContainerElement
+                to={`${pathname}?prefix=${file.key}`}
+                onClick={onClickHandler.bind(null, file.key)}
+              >
                 <div className="row">
                   <div className="col-xs-3">
                     {file.key}
@@ -68,7 +83,7 @@ const BucketData = ({data}) => {
                     {file['last-modified']}
                   </div>
                 </div>
-              </Link>
+              </ContainerElement>
             ))
           }
         </div>
@@ -78,12 +93,17 @@ const BucketData = ({data}) => {
 };
 
 BucketData.propTypes = {
-  data: PropTypes.arrayOf(PropTypes.object)
+  data: PropTypes.arrayOf(PropTypes.object),
+  loading: PropTypes.bool,
+  enableRouting: PropTypes.bool
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, ownProps) => {
+  let {enableRouting = true} = ownProps;
   return {
-    data: state.s3.activeBucketDetails
+    data: state.s3.activeBucketDetails,
+    loading: state.s3.loading,
+    enableRouting
   };
 };
 
@@ -91,9 +111,4 @@ const BucketDataWrapper = connect(
   mapStateToProps
 )(BucketData);
 
-const BucketDataView = () => (
-  <Provider store={DataPrepBrowserStore}>
-    <BucketDataWrapper />
-  </Provider>
-);
-export default BucketDataView;
+export default BucketDataWrapper;

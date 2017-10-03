@@ -166,14 +166,14 @@ export default class DataPrepConnections extends Component {
     }
 
     // FIXME: This feels adhoc. We should be able to simplify this.
-    if (browserName === 'upload') {
+    if (typeof browserName === 'object' && browserName.type === 'upload') {
       this.setState({
         showUpload: true
       });
       return;
     }
     let activeConnectionType, activeConnectionid;
-    if (browserName === 'file') {
+    if (typeof browserName === 'object' && browserName.type === 'file') {
       setActiveBrowser({name: 'file'});
       activeConnectionType = 'file';
     } else if (typeof browserName === 'object' && browserName.type === 'DATABASE') {
@@ -269,7 +269,7 @@ export default class DataPrepConnections extends Component {
                 to={`${baseLinkPath}/database/${database.id}`}
                 activeClassName="active"
                 className="menu-item-expanded-list"
-                onClick={this.handlePropagation.bind(this, database.type)}
+                onClick={this.handlePropagation.bind(this, database)}
                 singleWorkspaceMode={this.props.singleWorkspaceMode}
               >
                 {database.name}
@@ -303,7 +303,7 @@ export default class DataPrepConnections extends Component {
                 to={`${baseLinkPath}/kafka/${kafka.id}`}
                 activeClassName="active"
                 className="menu-item-expanded-list"
-                onClick={this.handlePropagation.bind(this, kafka.type)}
+                onClick={this.handlePropagation.bind(this, kafka)}
                 singleWorkspaceMode={this.props.singleWorkspaceMode}
               >
                 {kafka.name}
@@ -337,7 +337,7 @@ export default class DataPrepConnections extends Component {
                 to={`${baseLinkPath}/s3/${s3.id}/buckets`}
                 activeClassName="active"
                 className="menu-item-expanded-list"
-                onClick={this.handlePropagation.bind(this, s3.type)}
+                onClick={this.handlePropagation.bind(this, s3)}
                 singleWorkspaceMode={this.props.singleWorkspaceMode}
               >
                 {s3.name}
@@ -382,7 +382,7 @@ export default class DataPrepConnections extends Component {
             <NavLinkWrapper
               to={`${baseLinkPath}/upload`}
               activeClassName="active"
-              onClick={this.handlePropagation.bind(this, 'upload')}
+              onClick={this.handlePropagation.bind(this, {type: 'upload'})}
               singleWorkspaceMode={this.props.singleWorkspaceMode}
             >
               <span className="fa fa-fw">
@@ -399,7 +399,7 @@ export default class DataPrepConnections extends Component {
             <NavLinkWrapper
               to={`${baseLinkPath}/browser`}
               activeClassName="active"
-              onClick={this.handlePropagation.bind(this, 'file')}
+              onClick={this.handlePropagation.bind(this, {type: 'file'})}
               singleWorkspaceMode={this.props.singleWorkspaceMode}
             >
               <span className="fa fa-fw">
