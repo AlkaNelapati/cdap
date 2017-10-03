@@ -18,7 +18,7 @@ import React, {Component, PropTypes} from 'react';
 import IconSVG from 'components/IconSVG';
 import T from 'i18n-react';
 import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
-import {setActiveBucket, fetchBuckets} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
+import {fetchBucketDetails, fetchBuckets} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
 import BucketDataView from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketData';
 import BucketsList from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketsList';
 import BucketWrapper from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketWrapper';
@@ -82,8 +82,8 @@ export default class S3Browser extends Component {
             path={`${BASEPATH}/buckets/:bucketId`}
             render={(match) => {
               let bucketId = match.match.params.bucketId;
-              let {prefix} = queryString.parse(objectQuery(this.props, 'location', 'search'));
-              setActiveBucket(bucketId, prefix);
+              let {prefix = ''} = queryString.parse(objectQuery(this.props, 'location', 'search'));
+              fetchBucketDetails(`/${bucketId}/${prefix}`);
               return <BucketDataView {...this.props} />;
             }}
           />

@@ -18,13 +18,14 @@ import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
 import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import {Link} from 'react-router-dom';
-import {setActiveBucket} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
-import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
+import {fetchBucketDetails} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
 import {preventPropagation} from 'services/helpers';
 
-const onClickHandler = (prefix, e) => {
-  let {activeBucket} = DataPrepBrowserStore.getState().s3;
-  setActiveBucket(activeBucket, prefix);
+const onClickHandler = (enableRouting, prefix, e) => {
+  if (enableRouting) {
+    return;
+  }
+  fetchBucketDetails(prefix);
   preventPropagation(e);
   return false;
 };
@@ -38,8 +39,6 @@ const BucketData = ({data, loading, enableRouting}) => {
   if (!Object.keys(data).length) {
     return null;
   }
-  let files = data['object-summaries'];
-  let directories = data.directories.map(directory => ({key: directory}));
   let pathname = window.location.pathname.replace(/\/cdap/, '');
   let ContainerElement = enableRouting ? Link : 'div';
 
@@ -64,10 +63,10 @@ const BucketData = ({data, loading, enableRouting}) => {
       <div className="s3-content-body">
         <div className="s3-buckets">
           {
-            files.concat(directories).map(file => (
+            data.map(file => (
               <ContainerElement
                 to={`${pathname}?prefix=${file.key}`}
-                onClick={onClickHandler.bind(null, file.key)}
+                onClick={onClickHandler.bind(null, enableRouting, file.key)}
               >
                 <div className="row">
                   <div className="col-xs-3">

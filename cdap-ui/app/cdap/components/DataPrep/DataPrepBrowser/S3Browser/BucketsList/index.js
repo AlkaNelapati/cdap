@@ -18,11 +18,15 @@ import React, {PropTypes} from 'react';
 import {connect} from 'react-redux';
 import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import {Link} from 'react-router-dom';
-import {setActiveBucket} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
+import {fetchBucketDetails} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
 import {preventPropagation} from 'services/helpers';
+import {humanReadableDate} from 'services/helpers';
 
-const onClickHandler = (bucketId, e) => {
-  setActiveBucket(bucketId);
+const onClickHandler = (enableRouting, bucketId, e) => {
+  if (enableRouting) {
+    return;
+  }
+  fetchBucketDetails(`/${bucketId}`);
   preventPropagation(e);
   return false;
 };
@@ -56,17 +60,17 @@ const BucketsList = ({buckets, loading, enableRouting}) => {
               <ContainerElement
                 to={`${pathname}/${bucket.name}`}
                 isNativeLink={!enableRouting}
-                onClick={onClickHandler.bind(null, bucket.name)}
+                onClick={onClickHandler.bind(null, enableRouting, bucket.name)}
               >
                 <div className="row">
                   <div className="col-xs-4">
                     {bucket.name}
                   </div>
                   <div className="col-xs-4">
-                    {bucket.owner['display-name']}
+                    {bucket.owner}
                   </div>
                   <div className="col-xs-4">
-                    {bucket['creation-date']}
+                    {humanReadableDate(bucket.created, true)}
                   </div>
                 </div>
               </ContainerElement>
@@ -88,7 +92,7 @@ BucketsList.propTypes = {
 const mapStateToProps = (state, ownProps) => {
   let {enableRouting = true} = ownProps;
   return {
-    buckets: state.s3.buckets,
+    buckets: state.s3.activeBucketDetails,
     loading: state.s3.loading,
     enableRouting
   };

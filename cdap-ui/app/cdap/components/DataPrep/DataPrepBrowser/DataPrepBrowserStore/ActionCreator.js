@@ -119,33 +119,8 @@ const setS3AsActiveBrowser = (payload) => {
     });
 };
 
-export function fetchBuckets(connectionId) {
-  setS3Loading();
-  let {selectedNamespace: namespace} = NamespaceStore.getState();
-  MyDataPrepApi
-    .getS3Buckets({namespace, connectionId})
-    .subscribe(res => {
-      DataPrepBrowserStore.dispatch({
-        type: BrowserStoreActions.SET_S3_BUCKETS,
-        payload: {
-          buckets: res
-        }
-      });
-    });
-}
-
-export function setActiveBucket(activeBucket, prefix) {
-  DataPrepBrowserStore.dispatch({
-    type: BrowserStoreActions.SET_S3_ACTIVE_BUCKET,
-    payload:{
-      activeBucket
-    }
-  });
-  if (prefix) {
-    setPrefix(prefix);
-  } else {
-    fetchBucketDetails();
-  }
+export function fetchBuckets() {
+  fetchBucketDetails(`/`);
 }
 
 export function setPrefix(prefix) {
@@ -158,26 +133,25 @@ export function setPrefix(prefix) {
   fetchBucketDetails(prefix);
 }
 
-export function fetchBucketDetails(prefix) {
+export function fetchBucketDetails(path) {
   setS3Loading();
   let {selectedNamespace: namespace} = NamespaceStore.getState();
-  let { activeBucket, connectionId} = DataPrepBrowserStore.getState().s3;
+  let { connectionId} = DataPrepBrowserStore.getState().s3;
   let params = {
     namespace,
-    connectionId,
-    bucketId: activeBucket
+    connectionId
   };
-  if (prefix) {
-    params = {...params, prefix};
+  if (path) {
+    params = {...params, path};
   }
   MyDataPrepApi
     .exploreBucketDetails(params)
     .subscribe(
-      activeBucketDetails => {
+      res => {
         DataPrepBrowserStore.dispatch({
           type: BrowserStoreActions.SET_S3_ACTIVE_BUCKET_DETAILS,
           payload: {
-            activeBucketDetails
+            activeBucketDetails: res.values
           }
         });
       }
