@@ -21,11 +21,18 @@ import {Link} from 'react-router-dom';
 import {fetchBucketDetails} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
 import {preventPropagation} from 'services/helpers';
 
-const onClickHandler = (enableRouting, prefix, e) => {
+const onClickHandler = (enableRouting, file, e) => {
+  if (!file.directory) {
+    console.log('Wrangle the file', file.name);
+    preventPropagation(e);
+    return false;
+  }
   if (enableRouting) {
     return;
   }
-  fetchBucketDetails(prefix);
+  if (file.type === 'directory') {
+    fetchBucketDetails(file.name);
+  }
   preventPropagation(e);
   return false;
 };
@@ -65,15 +72,15 @@ const BucketData = ({data, loading, enableRouting}) => {
           {
             data.map(file => (
               <ContainerElement
-                to={`${pathname}?prefix=${file.key}`}
-                onClick={onClickHandler.bind(null, enableRouting, file.key)}
+                to={`${pathname}?prefix=${file.path}`}
+                onClick={onClickHandler.bind(null, enableRouting, file)}
               >
                 <div className="row">
                   <div className="col-xs-3">
-                    {file.key}
+                    {file.name}
                   </div>
                   <div className="col-xs-3">
-                    {file['storage-class']}
+                    {file['class']}
                   </div>
                   <div className="col-xs-3">
                     {file['size']}
