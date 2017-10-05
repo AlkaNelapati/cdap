@@ -18,7 +18,7 @@ import React, {Component, PropTypes} from 'react';
 import IconSVG from 'components/IconSVG';
 import T from 'i18n-react';
 import DataPrepBrowserStore from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore';
-import {fetchBucketDetails, fetchBuckets} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
+import {fetchBucketDetails, setS3Loading} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
 import BucketDataView from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketData';
 import BucketsList from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketsList';
 import BucketWrapper from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketWrapper';
@@ -26,6 +26,9 @@ import {Route, Switch, Redirect} from 'react-router-dom';
 import queryString from 'query-string';
 import {objectQuery} from 'services/helpers';
 import {Provider} from 'react-redux';
+import MyDataPrepApi from 'api/dataprep';
+import NamespaceStore from 'services/NamespaceStore';
+
 
 require('./S3Browser.scss');
 const RouteToS3Home = (match) => {
@@ -58,8 +61,32 @@ export default class S3Browser extends Component {
     return `10 Files and Directories`;
   }
 
+  onWorkspaceCreate = (file) => {
+    let {selectedNamespace: namespace} = NamespaceStore.getState();
+    let {connectionId, activeBucket} = DataPrepBrowserStore.getState().s3;
+    setS3Loading();
+    MyDataPrepApi
+      .readS3File({
+        namespace,
+        connectionId,
+        activeBucket,
+        key: file.path
+      })
+      .subscribe(
+        res => {
+          let {id: workspaceId} = res;
+          if (this.props.enableRouting) {
+            window.location.href = `${window.location.origin}/cdap/ns/${namespace}/dataprep/${workspaceId}`;
+          }
+          if (this.props.onWorkspaceCreate && typeof onWorkspaceCreate === 'function') {
+            this.props.onWorkspaceCreate(workspaceId);
+          }
+        }
+      );
+  };
+
   renderContentBody = () => {
-    let {buckets, connectionId} = DataPrepBrowserStore.getState().s3;
+    let {buckets} = DataPrepBrowserStore.getState().s3;
     let BASEPATH = '/ns/:namespace/connections/s3/:s3Id';
     if (this.props.enableRouting) {
       return (
@@ -72,9 +99,8 @@ export default class S3Browser extends Component {
           <Route
             exact
             path={`${BASEPATH}/buckets`}
-            render={(match) => {
-              let s3Id = match.match.params.s3Id;
-              fetchBuckets(s3Id);
+            render={() => {
+              fetchBucketDetails();
               return <BucketsList {...this.props} />;
             }}
           />
@@ -83,8 +109,8 @@ export default class S3Browser extends Component {
             render={(match) => {
               let bucketId = match.match.params.bucketId;
               let {prefix = ''} = queryString.parse(objectQuery(this.props, 'location', 'search'));
-              fetchBucketDetails(`/${bucketId}/${prefix}`);
-              return <BucketDataView {...this.props} />;
+              fetchBucketDetails(prefix, bucketId);
+              return <BucketDataView {...this.props} onWorkspaceCreate={this.onWorkspaceCreate} />;
             }}
           />
           <Route render={RouteToS3Home} />
@@ -92,9 +118,9 @@ export default class S3Browser extends Component {
       );
     }
     if (!buckets.length) {
-      fetchBuckets(connectionId);
+      fetchBucketDetails();
     }
-    return <BucketWrapper {...this.props} />;
+    return <BucketWrapper {...this.props} onWorkspaceCreate={this.onWorkspaceCreate} />;
   };
 
   render() {

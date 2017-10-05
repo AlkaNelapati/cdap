@@ -19,17 +19,18 @@ import BucketList from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketsLis
 import BucketData from 'components/DataPrep/DataPrepBrowser/S3Browser/BucketData';
 import {connect} from 'react-redux';
 
-function BucketContainer({activeBucket, enableRouting}) {
+function BucketContainer({activeBucket, enableRouting, onWorkspaceCreate}) {
   if (!activeBucket) {
-    return <BucketList enableRouting={enableRouting} />;
+    return <BucketList enableRouting={enableRouting} onWorkspaceCreate={onWorkspaceCreate} />;
   }
 
-  return <BucketData enableRouting={enableRouting} />;
+  return <BucketData enableRouting={enableRouting} onWorkspaceCreate={onWorkspaceCreate} />;
 }
 
 BucketContainer.propTypes = {
   activeBucket: PropTypes.string,
-  enableRouting: PropTypes.bool
+  enableRouting: PropTypes.bool,
+  onWorkspaceCreate: PropTypes.func
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -37,7 +38,8 @@ const mapStateToProps = (state, ownProps) => {
     activeBucket: state.s3.activeBucket,
     buckets: state.s3.buckets,
     prefix: state.s3.prefix,
-    enableRouting: ownProps.enableRouting
+    enableRouting: ownProps.enableRouting,
+    onWorkspaceCreate: ownProps.onWorkspaceCreate
   };
 };
 

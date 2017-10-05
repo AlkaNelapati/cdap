@@ -119,11 +119,7 @@ const setS3AsActiveBrowser = (payload) => {
     });
 };
 
-export function fetchBuckets() {
-  fetchBucketDetails(`/`);
-}
-
-export function setPrefix(prefix) {
+const setPrefix = (prefix) => {
   DataPrepBrowserStore.dispatch({
     type: BrowserStoreActions.SET_S3_PREFIX,
     payload: {
@@ -131,10 +127,23 @@ export function setPrefix(prefix) {
     }
   });
   fetchBucketDetails(prefix);
-}
+};
 
-export function fetchBucketDetails(path) {
+const fetchBucketDetails = (path = '', bucketId) => {
   setS3Loading();
+
+  let {activeBucket} = DataPrepBrowserStore.getState().s3;
+  if (!bucketId) {
+    bucketId = activeBucket;
+  }
+  path = `/${bucketId}/${path}`;
+  if (bucketId !== activeBucket) {
+    DataPrepBrowserStore.dispatch({
+      type: BrowserStoreActions.SET_S3_ACTIVE_BUCKET,
+      payload: {activeBucket: bucketId}
+    });
+  }
+
   let {selectedNamespace: namespace} = NamespaceStore.getState();
   let { connectionId} = DataPrepBrowserStore.getState().s3;
   let params = {
@@ -156,13 +165,13 @@ export function fetchBucketDetails(path) {
         });
       }
     );
-}
+};
 
-export function setS3Loading() {
+const setS3Loading = () => {
   DataPrepBrowserStore.dispatch({
     type: BrowserStoreActions.SET_S3_LOADING
   });
-}
+};
 
 const setKafkaAsActiveBrowser = (payload) => {
   setActiveBrowser(payload);
@@ -219,5 +228,8 @@ export {
   setS3AsActiveBrowser,
   setDatabaseProperties,
   setDatabaseAsActiveBrowser,
-  setKafkaAsActiveBrowser
+  setKafkaAsActiveBrowser,
+  setPrefix,
+  fetchBucketDetails,
+  setS3Loading
 };

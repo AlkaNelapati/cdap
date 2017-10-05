@@ -20,25 +20,28 @@ import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import {Link} from 'react-router-dom';
 import {fetchBucketDetails} from 'components/DataPrep/DataPrepBrowser/DataPrepBrowserStore/ActionCreator';
 import {preventPropagation} from 'services/helpers';
+import classnames from 'classnames';
 
-const onClickHandler = (enableRouting, file, e) => {
+const onClickHandler = (enableRouting, onWorkspaceCreate, file, e) => {
   if (!file.directory) {
-    console.log('Wrangle the file', file.name);
+    if (file.wrangle) {
+      onWorkspaceCreate(file);
+    }
     preventPropagation(e);
     return false;
   }
   if (enableRouting) {
     return;
   }
-  if (file.type === 'directory') {
-    fetchBucketDetails(file.name);
+  if (file.directory) {
+    fetchBucketDetails(file.path);
   }
   preventPropagation(e);
   return false;
 };
 
 
-const BucketData = ({data, loading, enableRouting}) => {
+const BucketData = ({data, loading, enableRouting, onWorkspaceCreate}) => {
   if (loading) {
     return <LoadingSVGCentered />;
   }
@@ -72,8 +75,9 @@ const BucketData = ({data, loading, enableRouting}) => {
           {
             data.map(file => (
               <ContainerElement
+                className={classnames({'disabled': !file.directory && !file.wrangle})}
                 to={`${pathname}?prefix=${file.path}`}
-                onClick={onClickHandler.bind(null, enableRouting, file)}
+                onClick={onClickHandler.bind(null, enableRouting, onWorkspaceCreate, file)}
               >
                 <div className="row">
                   <div className="col-xs-3">
@@ -101,15 +105,17 @@ const BucketData = ({data, loading, enableRouting}) => {
 BucketData.propTypes = {
   data: PropTypes.arrayOf(PropTypes.object),
   loading: PropTypes.bool,
-  enableRouting: PropTypes.bool
+  enableRouting: PropTypes.bool,
+  onWorkspaceCreate: PropTypes.func
 };
 
 const mapStateToProps = (state, ownProps) => {
-  let {enableRouting = true} = ownProps;
+  let {enableRouting = true, onWorkspaceCreate = () => {}} = ownProps;
   return {
     data: state.s3.activeBucketDetails,
     loading: state.s3.loading,
-    enableRouting
+    enableRouting,
+    onWorkspaceCreate
   };
 };
 

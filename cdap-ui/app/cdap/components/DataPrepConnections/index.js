@@ -156,7 +156,7 @@ export default class DataPrepConnections extends Component {
 
   handlePropagation(browserName, e) {
     if (this.props.enableRouting && !this.props.singleWorkspaceMode) {
-      setActiveBrowser({name: browserName});
+      setActiveBrowser({name: typeof browserName === 'object' ? browserName.name : browserName});
       return;
     }
     preventPropagation(e);
@@ -551,6 +551,8 @@ export default class DataPrepConnections extends Component {
       setKafkaAsActiveBrowser({name: 'kafka', id: this.state.activeConnectionid});
     } else if (this.state.activeConnectionType === 'file') {
       setActiveBrowser({name: 'file'});
+    } else if (this.state.activeConnectionType === 's3') {
+      setS3AsActiveBrowser({name: 's3', id: this.state.activeConnectionid});
     }
     return (
       <DataPrepBrowser

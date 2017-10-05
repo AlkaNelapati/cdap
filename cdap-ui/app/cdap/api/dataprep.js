@@ -70,6 +70,7 @@ const MyDataPrepApi = {
   s3TestConnection: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/s3/test`),
   getS3Buckets: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/:connectionId/s3/buckets`),
   exploreBucketDetails: apiCreator(dataSrc, 'GET', 'REQUEST', `${connectionsPath}/:connectionId/s3/explore`),
+  readS3File: apiCreator(dataSrc, 'POST', 'REQUEST', `${connectionsPath}/:connectionId/s3/buckets/:activeBucket/read`),
 
   // Connections
   listConnections: apiCreator(dataSrc, 'GET', 'REQUEST', `${connectionsPath}`),

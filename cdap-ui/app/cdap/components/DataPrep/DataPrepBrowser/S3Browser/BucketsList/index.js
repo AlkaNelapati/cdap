@@ -26,7 +26,7 @@ const onClickHandler = (enableRouting, bucketId, e) => {
   if (enableRouting) {
     return;
   }
-  fetchBucketDetails(`/${bucketId}`);
+  fetchBucketDetails(``, bucketId);
   preventPropagation(e);
   return false;
 };

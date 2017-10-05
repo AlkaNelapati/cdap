@@ -17,6 +17,7 @@
 $header_border_color: #cccccc;
 $header_bg_color: #eeeeee;
 $row_font_color: #333333;
+$disabled_row_color: #aaaaaa;
 
 .s3-browser {
   height: 100%;
@@ -56,12 +57,19 @@ $row_font_color: #333333;
         > div {
           cursor: pointer;
         }
+        a,
+        > div {
+          color: $row_font_color;
+        }
+        .disabled {
+          cursor: not-allowed;
+          color: $disabled_row_color;
+        }
         .row {
           margin: 0;
           border-bottom: 1px solid $header_border_color;
           line-height: 36px;
-          color: $row_font_color;
-
+          color: inherit;
           > div {
             white-space: nowrap;
             overflow: hidden;
